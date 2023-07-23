@@ -1,0 +1,60 @@
+apiVersion: core.micromesh.dev/v1alpha1
+kind: Project
+metadata:
+  name: finance-news-stream
+spec:
+  services:
+    - name: reddit-stream
+      metadata:
+        position-x: -665
+        position-y: -473
+      image: dockerdocker12345/reddit-stream
+      port: 80
+      env:
+        - name: REDDIT_CLIENT_ID
+          value: $REDDIT_CLIENT_ID
+        - name: REDDIT_CLIENT_SECRET
+          value: $REDDIT_CLIENT_SECRET
+        - name: SUBREDDIT
+          value: FinanceNews
+        - name: WEBHOOK_URL
+          value: http://is-significant-news.yairyairyair
+      scaling:
+        maxInstances: 1
+        minInstances: 1
+    - name: is-significant-news
+      metadata:
+        position-x: -269
+        position-y: -358
+      image: dockerdocker12345/is-significant-news
+      port: 80
+      env:
+        - name: SENTIMENT_SERVICE_URL
+          value: http://sentiment-service.yairyairyair
+        - name: WEBHOOK_URL
+          value: http://discord-webhook-service.yairyairyair
+    - name: sentiment-service
+      metadata:
+        position-x: 119
+        position-y: -515
+      image: dockerdocker12345/sentiment-service
+      port: 80
+    - name: discord-webhook-service
+      metadata:
+        position-x: 151
+        position-y: -232
+      image: dockerdocker12345/discord-webhook-service
+      port: 80
+      env:
+        - name: WEBHOOK_URL
+          value: $WEBHOOK_URL
+  functions: []
+  databases: []
+  links:
+    - from: reddit-stream
+      to:
+        - name: is-significant-news
+    - from: is-significant-news
+      to:
+        - name: sentiment-service
+        - name: discord-webhook-service
